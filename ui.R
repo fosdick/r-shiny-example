@@ -6,14 +6,17 @@ all2017Data$area <- gsub('\\s+', '', all2017Data$area)
 l = unique(all2017Data$area)
 
 shinyUI(pageWithSidebar(
-  headerPanel("Plot by Area"),
+  headerPanel("Revenue vs Volume Plot by Area"),
   sidebarPanel(
-    sliderInput('slideValue', 'Predict Revnue',value = 300000, min = 0, max = 1000000, step = 50000,),
-    selectInput('area','Select an Area', l)
+    p('Pick an area to see how volume relates to revenue.'),
+    selectInput('area','Select an Area', l),
+    p('Use the slider to change the predicted revenue as determined by volume.'),
+    uiOutput("slider"),
+    tags$small('Slider default is the average.'),
+    uiOutput("table")
   ),
   mainPanel(
-    plotOutput('areaPlot'),
-    h3('predict value'),
-    verbatimTextOutput("summary")
+    plotOutput('areaPlot')
+    
   )
 ))

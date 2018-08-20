@@ -1,0 +1,67 @@
+---
+title: "Using Volume as Revenue Predictor App"
+subtitle: "Does it make sense to increase volume?, 08/20/2018"
+author: "Jarvis Fosdick"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+all2017Data <- read.csv("RevVolume.csv", na.strings=c("-"))
+cn <- c("isRegion", "area", "revenue", "mcf", "bbls", "date")
+colnames(all2017Data) = cn
+all2017Data$revenue <- as.numeric(gsub('[$,]', '', all2017Data$revenue))
+all2017Data$mcf <- as.numeric(gsub('[$,]', '', all2017Data$mcf))
+all2017Data$bbls <- as.numeric(gsub('[$,]', '', all2017Data$bbls))
+all2017Data$area <- gsub('\\s+', '', all2017Data$area)
+
+```
+
+## Often we think more is better
+
+Management always wants more as they believe the bottom line is increased volume!
+
+### Using this shiny app Managers can:
+
+- See if their area is trending upward with volume
+- Predict their revenue
+- Visualize trends by each area
+
+## Consider this chart
+```{r}
+tt<- all2017Data[all2017Data$area == "SoutheastNewMexicoSEC",]
+g = ggplot(tt, aes(x = mcf, y = revenue, colour = area))
+g = g + xlab("Wellhead MCF per Day")
+g = g + ylab("Revenue")
+g = g + geom_smooth(method = "lm", colour = "black")
+#g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, alpha=0.9)
+g
+```
+
+### INCREASED VOLUME LOWERS PROFIT!
+
+
+## Use The App to Find the Warning Signs
+
+```{r fig.width=8,echo=FALSE}
+library(png)
+library(grid)
+img <- readPNG("app.png")
+ grid.raster(img)
+```
+
+## Our App Makes the Difference!
+```{r}
+tt<- all2017Data[all2017Data$area == "DJBasinSEC",]
+g = ggplot(tt, aes(x = mcf, y = revenue, colour = area))
+g = g + xlab("Wellhead MCF per Day")
+g = g + ylab("Revenue")
+g = g + geom_smooth(method = "lm", colour = "black")
+#g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, alpha=0.9)
+g
+```
+
+### Keep things going in the right direction!
