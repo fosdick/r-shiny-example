@@ -1,4 +1,9 @@
 ---
+title: "Hacker Session R and Residuals"
+output: ioslides_presentation
+---
+
+---
 ## Plot of the data
 ```{r, echo = FALSE, fig.height=5,fig.width=5}
 library(UsingR)
