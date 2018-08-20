@@ -1,0 +1,9 @@
+*.rds
+*.zip
+.RData
+.Rhistory
+cache
+Project2.log
+.Rproj.user
+*.Rproj
+project.knit.md

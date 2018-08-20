@@ -1,0 +1,79 @@
+---
+## Plot of the data
+```{r, echo = FALSE, fig.height=5,fig.width=5}
+library(UsingR)
+data(diamond)
+library(ggplot2)
+g = ggplot(diamond, aes(x = carat, y = price))
+g = g + xlab("Mass (carats)")
+g = g + ylab("Price (SIN $)")
+g = g + geom_point(size = 7, colour = "black", alpha=0.5)
+g = g + geom_point(size = 5, colour = "blue", alpha=0.2)
+g = g + geom_smooth(method = "lm", colour = "black")
+g
+```
+
+---
+## Fitting the linear regression model
+```{r}
+fit <- lm(price ~ carat, data = diamond)
+coef(fit)
+```
+
+* We estimate an expected `r round(coef(fit)[2], 2)` (SIN) dollar increase in price for every carat increase in mass of diamond.
+* The intercept `r round(coef(fit)[1], 2)` is the expected price
+  of a 0 carat diamond.
+
+---
+## Getting a more interpretable intercept
+```{r, echo = TRUE}
+fit2 <- lm(price ~ I(carat - mean(carat)), data = diamond)
+coef(fit2)
+```
+
+Thus $`r round(coef(fit2)[1], 1)` is the expected price for 
+the average sized diamond of the data (`r mean(diamond$carat)` carats).
+
+---
+## Changing scale
+* A one carat increase in a diamond is pretty big, what about
+  changing units to 1/10th of a carat? 
+* We can just do this by just dividing the coeficient by 10.
+  * We expect  a `r round(coef(fit)[2], 2) / 10` (SIN) dollar   change in price for every 1/10th of a carat increase in mass of diamond.
+* Showing that it's the same if we rescale the Xs and refit
+```{r, echo = TRUE}
+fit3 <- lm(price ~ I(carat * 10), data = diamond)
+coef(fit3)
+```
+
+---
+## Predicting the price of a diamond
+```{r, echo = TRUE}
+newx <- c(0.16, 0.27, 0.34, 0.5)
+coef(fit)[1] + coef(fit)[2] * newx
+predict(fit, newdata = data.frame(carat = newx))
+
+
+
+
+
+
+data("cars")
+cars.lm <- lm(dist ~ speed, data = cars)
+summary(cars.lm)
+
+new.dat <- data.frame(speed=30)
+predict(cars.lm, newdata = new.dat, interval = 'confidence')
+
+
+y <- t$revenue; x <- t$mcf; n <- length(y)
+fit <- lm(dist ~ speed, data = cars)
+e <- resid(fit)
+yhat <- predict(fit)
+max(abs(e -(y - yhat)))
+max(abs(e - (y - coef(fit)[1] - coef(fit)[2] * x)))
+
+x = coef(fit)[1] + coef(fit)[2] * c(30)
+x
+
+```

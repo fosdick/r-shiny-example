@@ -1,0 +1,270 @@
+---
+title: "Hacker Session R and Residuals"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+```
+
+## R Markdown
+
+```{r}
+all2017Data <- read.csv("RevVolume.csv", na.strings=c("-"))
+head(all2017Data, 25)
+str(all2017Data)
+cn <- c("isRegion", "area", "revenue", "mcf", "bbls", "date")
+colnames(all2017Data) = cn
+all2017Data$revenue <- as.numeric(gsub('[$,]', '', all2017Data$revenue))
+all2017Data$mcf <- as.numeric(gsub('[$,]', '', all2017Data$mcf))
+all2017Data$bbls <- as.numeric(gsub('[$,]', '', all2017Data$bbls))
+```
+
+
+```{r}
+g = ggplot(all2017Data, aes(x = mcf, y = bbls))
+g = g + xlab("Wellhead MCF per Day")
+g = g + ylab("NGL bbls per day")
+g = g + geom_smooth(method = "lm", colour = "black")
+g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, alpha=0.6)
+g
+```
+
+
+```{r}
+g = ggplot(all2017Data, aes(x = mcf, y = revenue))
+g = g + xlab("Wellhead MCF per Day")
+g = g + ylab("Revenue")
+g = g + geom_smooth(method = "lm", colour = "black")
+g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, colour = "blue", alpha=0.2)
+g
+```
+
+```{r}
+g = ggplot(all2017Data, aes(x = bbls, y = revenue))
+g = g + xlab("BBLS per Day")
+g = g + ylab("Revenue")
+g = g + geom_smooth(method = "lm", colour = "black")
+g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, colour = "blue", alpha=0.2)
+g
+```
+
+
+```{r}
+y <- all2017Data$revenue; x <- all2017Data$bbls; n <- length(y)
+fit <- lm(y ~ x)
+e <- resid(fit)
+yhat <- predict(fit)
+max(abs(e -(y - yhat)))
+max(abs(e - (y - coef(fit)[1] - coef(fit)[2] * x)))
+```
+
+
+
+
+## Residuals are the signed length of the red lines
+```{r, echo = FALSE, fig.height=5, fig.width=5}
+n <- length(all2017Data$revenue)
+plot(all2017Data$bbls, all2017Data$revenue,  
+     xlab = "bbls", 
+     ylab = "revenue", 
+     bg = "lightblue", 
+     col = "black", cex = 2, pch = 21,frame = FALSE)
+abline(fit, lwd = 2)
+for (i in 1 : n) 
+  lines(c(x[i], x[i]), c(y[i], yhat[i]), col = "red" , lwd = 2)
+
+```
+
+
+```{r}
+
+y <- all2017Data$revenue; x <- all2017Data$mcf; n <- length(y)
+fit <- lm(y ~ x)
+e <- resid(fit)
+yhat <- predict(fit)
+max(abs(e -(y - yhat)))
+max(abs(e - (y - coef(fit)[1] - coef(fit)[2] * x)))
+```
+
+```{r, echo = FALSE, fig.height=5, fig.width=5}
+plot(all2017Data$mcf, all2017Data$revenue,  
+     xlab = "mcf", 
+     ylab = "revenue", 
+     bg = "lightblue", 
+     col = "black", cex = 2, pch = 21,frame = FALSE)
+abline(fit, lwd = 2)
+for (i in 1 : n) 
+  lines(c(x[i], x[i]), c(y[i], yhat[i]), col = "red" , lwd = 2)
+```
+
+
+```{r}
+y <- all2017Data$bbls; x <- all2017Data$mcf; n <- length(y)
+fit <- lm(y ~ x)
+e <- resid(fit)
+yhat <- predict(fit)
+max(abs(e -(y - yhat)))
+max(abs(e - (y - coef(fit)[1] - coef(fit)[2] * x)))
+```
+
+
+```{r, echo = FALSE, fig.height=5, fig.width=5}
+plot(all2017Data$mcf, all2017Data$bbls,  
+     xlab = "mcf", 
+     ylab = "bbls", 
+     bg = "lightblue", 
+     col = "black", cex = 2, pch = 21,frame = FALSE)
+abline(fit, lwd = 2)
+for (i in 1 : n) 
+  lines(c(x[i], x[i]), c(y[i], yhat[i]), col = "red" , lwd = 2)
+```
+
+
+## Non-linear data
+```{r, echo = FALSE, fig.height=5, fig.width=5}
+x = runif(100, -3, 3); y = x + sin(x) + rnorm(100, sd = .2); 
+library(ggplot2)
+g = ggplot(data.frame(x = x, y = y), aes(x = x, y = y))
+g = g + geom_smooth(method = "lm", colour = "black")
+g = g + geom_point(size = 7, colour = "black", alpha = 0.4)
+g = g + geom_point(size = 5, colour = "red", alpha = 0.4)
+g
+```
+
+---
+## Residual plot
+```{r, echo = FALSE, fig.height=5, fig.width=5}
+g = ggplot(data.frame(x = x, y = resid(lm(y ~ x))), 
+           aes(x = x, y = y))
+g = g + geom_hline(yintercept = 0, size = 2); 
+g = g + geom_point(size = 7, colour = "black", alpha = 0.4)
+g = g + geom_point(size = 5, colour = "red", alpha = 0.4)
+g = g + xlab("X") + ylab("Residual")
+g
+```
+
+---
+## Heteroskedasticity
+```{r, echo = FALSE, fig.height=4.5, fig.width=4.5}
+x <- runif(100, 0, 6); y <- x + rnorm(100,  mean = 0, sd = .001 * x); 
+g = ggplot(data.frame(x = x, y = y), aes(x = x, y = y))
+g = g + geom_smooth(method = "lm", colour = "black")
+g = g + geom_point(size = 7, colour = "black", alpha = 0.4)
+g = g + geom_point(size = 5, colour = "red", alpha = 0.4)
+g
+```
+
+---
+## Getting rid of the blank space can be helpful
+```{r, echo = FALSE, fig.height=4.5, fig.width=4.5}
+g = ggplot(data.frame(x = x, y = resid(lm(y ~ x))), 
+           aes(x = x, y = y))
+g = g + geom_hline(yintercept = 0, size = 2); 
+g = g + geom_point(size = 7, colour = "black", alpha = 0.4)
+g = g + geom_point(size = 5, colour = "red", alpha = 0.4)
+g = g + xlab("X") + ylab("Residual")
+g
+```
+
+## Reasons our model doesn't fit so great
+
+### Time of year
+```{r}
+g = ggplot(all2017Data, aes(x = mcf, y = revenue, colour = date))
+g = g + xlab("Wellhead MCF per Day")
+g = g + ylab("Revenue")
+g = g + geom_smooth(method = "lm", colour = "black")
+#g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, alpha=0.6)
+g
+```
+
+### Area
+```{r}
+tdf <- all2017Data
+tdf$revenue = tdf$revenue / 1000000
+g = ggplot(tdf, aes(x = mcf, y = revenue, colour = area))
+g = g + xlab("Wellhead MCF per Day")
+g = g + ylab("Revenue")
+g = g + geom_smooth(method = "lm", colour = "black")
+#g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, alpha=0.6)
+g
+```
+
+```{r}
+df <- tdf[tdf$isRegion == "no",]
+g = ggplot(df, aes(x = mcf, y = revenue, colour = area))
+g = g + xlab("Wellhead MCF per Day")
+g = g + ylab("Revenue")
+g = g + geom_smooth(method = "lm", colour = "black")
+#g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, alpha=0.9)
+g
+```
+
+
+```{r}
+at = all2017Data;
+at$area = trimws(at$area)
+head(at,25)
+summary(t) 
+tt<- all2017Data[all2017Data$area == "           North SEC ",]
+head(t) 
+ts <- as.ts(tt)
+plot(ts)
+```
+```{r}
+head(tt)
+colnames(tt)
+```
+```{r}
+g = ggplot(tt, aes(x = mcf, y = revenue, colour = area))
+g = g + xlab("Wellhead MCF per Day")
+g = g + ylab("Revenue")
+g = g + geom_smooth(method = "lm", colour = "black")
+#g = g + geom_point(size = 1, colour = "black", alpha=0.5)
+g = g + geom_point(size = 2, alpha=0.9)
+g
+```
+
+
+```{r}
+y <- t$revenue; x <- t$mcf; n <- length(y)
+fit <- lm(y ~ x)
+e <- resid(fit)
+yhat <- predict(fit)
+max(abs(e -(y - yhat)))
+max(abs(e - (y - coef(fit)[1] - coef(fit)[2] * x)))
+
+lf = lm(revenue ~ mcf, data=tt)
+p = predict(lf, newdata = data.frame(mcf = c(1000000)))
+p
+summary(p)
+x = coef(fit)[1] + coef(fit)[2] * c(1000000)
+x
+
+plot(x)
+summary(fit)
+new.dat <- data.frame(mcf=1000000)
+predict(lf, newdata = new.dat)
+```
+
+
+```{r, echo = FALSE, fig.height=5, fig.width=5}
+plot(t$mcf, t$revenue,  
+     xlab = "mcf", 
+     ylab = "revenue", 
+     bg = "lightblue", 
+     col = "black", cex = 2, pch = 21,frame = FALSE)
+abline(fit, lwd = 2)
+for (i in 1 : n) 
+  lines(c(x[i], x[i]), c(y[i], yhat[i]), col = "red" , lwd = 2)
+```
+
+
